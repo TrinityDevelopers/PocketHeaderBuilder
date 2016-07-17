@@ -32,7 +32,7 @@ public class OnlineDemangler {
         Logger.getLogger("OnlineDemangler").log(Level.INFO, input);
 
         try{
-            return Jsoup.connect("http://demangler.com/").data("input", input).post().select("div.responseSection > pre").first().text();
+            return Jsoup.connect("http://demangler.com/").data("input", input).post().select("div.section > pre").first().text();
         }catch(Exception e){
             e.printStackTrace();
             return null;
