@@ -45,8 +45,7 @@ public class Header {
             try(final BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)){
                 writer.write("#pragma once"); writer.newLine();
                 writer.newLine();
-                writer.write("class " + this.getClassName()); writer.newLine();
-                writer.write("{"); writer.newLine();
+                writer.write("class " + this.getClassName() + " {"); writer.newLine();
                 writer.write("public: "); writer.newLine();
 
                 final String demangled = OnlineDemangler.demangle(this.getFunctions().parallelStream().collect(Collectors.joining("\n")));
@@ -70,7 +69,7 @@ public class Header {
 
                     return function;
                 }).filter(Objects::nonNull).forEachOrdered(function -> {
-                    String prefix = "    ";
+                    String prefix = "\t";
                     if(function.equals("__imp___cxa_pure_virtual")) prefix += "//";
 
                     prefix += "virtual ";
@@ -83,12 +82,7 @@ public class Header {
                     }
                 });
 
-                writer.write("};"); writer.newLine(); writer.newLine();
-                writer.write("/* Created by PocketHeaderBuilder"); writer.newLine();
-                writer.write(" * "); writer.newLine();
-                writer.write(" * Licensed under the Apache License, Version 2.0"); writer.newLine();
-                writer.write(" * https://github.com/ChalkPE/PocketHeaderBuilder"); writer.newLine();
-                writer.write(" */"); writer.newLine();
+                writer.write("};");
             }
         }catch(Exception e){
             e.printStackTrace();
