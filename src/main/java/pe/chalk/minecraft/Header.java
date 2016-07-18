@@ -16,11 +16,18 @@ import java.util.stream.Collectors;
  * @since 2015-11-16
  */
 public class Header {
-    private final String className;
+    private String[] namespaces;
+    private String className;
     private final List<String> functions;
 
     public Header(String className, String... functions){
-        this.className = className;
+        if(!className.contains("::")){
+            this.namespaces = new String[]{};
+            this.className = className;
+        }else{
+            this.namespaces = className.substring(0, className.lastIndexOf("::")).split("::");
+            this.className = className.substring(className.lastIndexOf("::") + 2);
+        }
         this.functions = new ArrayList<>(Arrays.asList(functions));
     }
 
@@ -45,6 +52,11 @@ public class Header {
             try(final BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)){
                 writer.write("#pragma once"); writer.newLine();
                 writer.newLine();
+
+                for(String s : namespaces) {
+                    writer.write("namespace " + s + " {"); writer.newLine();
+                }
+
                 writer.write("class " + this.getClassName() + " {"); writer.newLine();
                 writer.write("public: "); writer.newLine();
 
@@ -55,9 +67,10 @@ public class Header {
 
                     int open = function.indexOf('(');
                     if(open >= 0){
-                        int index = function.indexOf("::");
+                        int index = function.lastIndexOf("::", open);
                         if(index >= 0 && index < open){
                             String methodClass = function.substring(0, index);
+                            if(methodClass.contains("::")) methodClass = methodClass.substring(methodClass.lastIndexOf("::") + 2);
                             if(!methodClass.equals(this.getClassName())) return null;
 
                             function = function.substring(index + 2);
@@ -81,6 +94,10 @@ public class Header {
                         throw new RuntimeException(e);
                     }
                 });
+
+                for(int i = 0; i < namespaces.length; i++){
+                    writer.write("};"); writer.newLine();
+                }
 
                 writer.write("};");
             }
