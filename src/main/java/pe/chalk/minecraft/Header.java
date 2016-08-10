@@ -61,7 +61,7 @@ public class Header {
                 writer.write("public: "); writer.newLine();
 
                 final String demangled = OnlineDemangler.demangle(this.getFunctions().parallelStream().collect(Collectors.joining("\n")));
-                if(demangled != null) Arrays.stream(demangled.split("\\n")).parallel().distinct().map(function -> {
+                if(demangled != null) Arrays.stream(demangled.split("\\n")).parallel().map(function -> {
                     function = function.replaceAll("&", " &");
                     function = function.replaceAll("\\*", " *");
 
@@ -77,8 +77,8 @@ public class Header {
                         }
                     }
 
-                    int close = function.lastIndexOf(')');
-                    if(close >= 0) function = function.substring(0, close + 1);
+                    int close = function.lastIndexOf(" 1");
+                    if(close >= 0) function = function.substring(0, close);
 
                     return function;
                 }).filter(Objects::nonNull).forEachOrdered(function -> {
@@ -95,7 +95,7 @@ public class Header {
                     }
                 });
 
-                for(int i = 0; i < namespaces.length; i++){
+                for (String namespace : namespaces) {
                     writer.write("};"); writer.newLine();
                 }
 
