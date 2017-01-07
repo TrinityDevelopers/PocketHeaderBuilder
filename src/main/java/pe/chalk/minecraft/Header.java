@@ -100,8 +100,13 @@ public class Header {
                     if(function.equals("__imp___cxa_pure_virtual") || function.equals("__cxa_pure_virtual")) prefix += "//";
 
                     prefix += "virtual ";
-                    if(!function.startsWith("~")) prefix += "void ";
 
+                    if(!function.startsWith("~")){
+                    	if (function.startsWith("is") || function.startsWith("can"))
+                    		prefix += "bool ";
+                    	else
+                    		prefix += "void ";
+                    }
                     try{
                         writer.write(prefix + formatFunction(function) + ";"); writer.newLine();
                     }catch(Exception e){
