@@ -43,6 +43,21 @@ public class Header {
         this.getFunctions().add(function);
         return this;
     }
+    
+    public String formatFunction(String functionText){
+    	if(!functionText.contains("("))
+    		return functionText;
+    	
+    	String classExterior = functionText.substring(0, functionText.indexOf("(") + 1) + functionText.substring(functionText.indexOf(")"));
+    	String[] params = (functionText.substring(functionText.indexOf("(") + 1, functionText.indexOf(")"))).split(", ");
+    	ArrayList<String> modifiedParams = new ArrayList<String>();
+    	for(String param : params){
+    		if(param.contains("const"))
+    			param = "const " + param.substring(0, param.indexOf(" ")) + ((param.charAt(param.length() - 1) != 't') ? param.charAt(param.length() - 1) : "");
+    		modifiedParams.add(param);
+    	}
+    	return classExterior.substring(0, classExterior.indexOf("(") + 1) + modifiedParams.toString().replace("[", "").replace("]", "") + classExterior.substring(classExterior.indexOf(")"));
+    }
 
     public void save(){
         try{
@@ -62,8 +77,7 @@ public class Header {
 
                 final String demangled = OnlineDemangler.demangle(this.getFunctions().parallelStream().collect(Collectors.joining("\n")));
                 if(demangled != null) Arrays.stream(demangled.split("\\n")).parallel().map(function -> {
-                    function = function.replaceAll("&", " &");
-                    function = function.replaceAll("\\*", " *");
+                    function = function.replaceAll("\\*", "*");
 
                     int open = function.indexOf('(');
                     if(open >= 0){
@@ -83,19 +97,19 @@ public class Header {
                     return function;
                 }).filter(Objects::nonNull).forEachOrdered(function -> {
                     String prefix = "\t";
-                    if(function.equals("__imp___cxa_pure_virtual")) prefix += "//";
+                    if(function.equals("__imp___cxa_pure_virtual") || function.equals("__cxa_pure_virtual")) prefix += "//";
 
                     prefix += "virtual ";
                     if(!function.startsWith("~")) prefix += "void ";
 
                     try{
-                        writer.write(prefix + function + ";"); writer.newLine();
+                        writer.write(prefix + formatFunction(function) + ";"); writer.newLine();
                     }catch(Exception e){
                         throw new RuntimeException(e);
                     }
                 });
 
-                for (String namespace : namespaces) {
+                for (@SuppressWarnings("unused") String namespace : namespaces) {
                     writer.write("};"); writer.newLine();
                 }
 
